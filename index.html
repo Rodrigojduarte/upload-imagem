@@ -1,218 +1,191 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload de Imagens - Equipe Atacado</title>
+  <title>Upload de Imagens</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(to right, #f1f4f9, #dff1ff);
-      color: #333;
       padding: 2rem;
+    }
+    .container {
+      background: white;
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
     h1 {
       text-align: center;
-    }
-    .form-section {
-      max-width: 600px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      color: #333;
     }
     input[type="text"] {
       width: 100%;
-      padding: 10px;
+      padding: 0.75rem;
       margin-bottom: 1rem;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 6px;
     }
-    .dropzone {
-      border: 2px dashed #007bff;
-      padding: 2rem;
+    .drop-area {
+      border: 2px dashed #2196f3;
+      padding: 1.5rem;
       text-align: center;
-      border-radius: 10px;
-      cursor: pointer;
+      color: #555;
       margin-bottom: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
     }
-    .preview-container {
+    .image-preview {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 1rem;
     }
-    .preview {
+    .image-box {
       position: relative;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      overflow: hidden;
-      width: 120px;
+      width: 100px;
       text-align: center;
     }
-    .preview img {
-      max-width: 100%;
+    .image-box img {
+      width: 100%;
+      border-radius: 6px;
       height: auto;
     }
-    .preview span {
-      font-size: 0.8rem;
-      display: block;
-      padding: 0.3rem;
+    .image-box input[type="radio"] {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      transform: scale(1.2);
     }
     .remove-btn {
       position: absolute;
-      top: 5px;
-      right: 5px;
+      top: 4px;
+      right: 4px;
       background: red;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
     }
-    .button {
-      width: 100%;
-      padding: 1rem;
+    .upload-btn {
       background-color: #003366;
       color: white;
       border: none;
-      border-radius: 5px;
+      padding: 1rem;
+      width: 100%;
+      border-radius: 6px;
       font-size: 1rem;
       cursor: pointer;
-    }
-    .error-msg {
-      color: red;
-      text-align: center;
-      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <div class="form-section">
+  <div class="container">
     <h1>Upload de Imagens</h1>
-    <input type="text" id="marca" placeholder="Marca" required />
-    <input type="text" id="descricao" placeholder="Descrição" required />
-    <input type="text" id="gtin" placeholder="GTIN" required />
-    <input type="text" id="sku" placeholder="SKU" required />
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="text" name="marca" placeholder="Marca" required>
+      <input type="text" name="descricao" placeholder="Descrição" required>
+      <input type="text" name="gtin" placeholder="GTIN" required>
+      <input type="text" name="sku" placeholder="SKU" required>
 
-    <div id="dropzone" class="dropzone">Arraste e solte as imagens aqui ou clique para selecionar</div>
-    <input type="file" id="fileInput" multiple accept="image/*" style="display:none" />
+      <div class="drop-area" id="dropArea">
+        Arraste e solte as imagens aqui ou clique para selecionar
+        <input type="file" id="imageInput" name="imagens[]" accept="image/*" multiple hidden>
+      </div>
 
-    <div class="preview-container" id="preview"></div>
+      <div class="image-preview" id="previewArea"></div>
 
-    <label for="imagem-principal">Selecionar Imagem Principal:</label>
-    <select id="imagem-principal"></select>
-
-    <button class="button" onclick="uploadImages()">Enviar Imagens</button>
-    <div class="error-msg" id="error-msg"></div>
+      <button type="submit" class="upload-btn">Enviar Imagens</button>
+    </form>
   </div>
 
   <script>
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const imagemPrincipalSelect = document.getElementById('imagem-principal');
-    const errorMsg = document.getElementById('error-msg');
+    const dropArea = document.getElementById('dropArea');
+    const imageInput = document.getElementById('imageInput');
+    const previewArea = document.getElementById('previewArea');
+    const uploadForm = document.getElementById('uploadForm');
 
-    let files = [];
+    let selectedImages = [];
 
-    dropzone.addEventListener('click', () => fileInput.click());
+    dropArea.addEventListener('click', () => imageInput.click());
 
-    dropzone.addEventListener('dragover', e => {
+    imageInput.addEventListener('change', handleFiles);
+
+    dropArea.addEventListener('dragover', e => {
       e.preventDefault();
-      dropzone.style.borderColor = '#00f';
+      dropArea.style.backgroundColor = "#e0f7fa";
     });
 
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.style.borderColor = '#007bff';
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.backgroundColor = "";
     });
 
-    dropzone.addEventListener('drop', e => {
+    dropArea.addEventListener('drop', e => {
       e.preventDefault();
-      handleFiles(e.dataTransfer.files);
-      dropzone.style.borderColor = '#007bff';
+      dropArea.style.backgroundColor = "";
+      handleFiles({ target: { files: e.dataTransfer.files } });
     });
 
-    fileInput.addEventListener('change', e => handleFiles(e.target.files));
+    function handleFiles(event) {
+      const files = [...event.target.files];
+      files.forEach(file => {
+        const id = crypto.randomUUID();
+        selectedImages.push({ id, file });
 
-    function handleFiles(selectedFiles) {
-      for (let file of selectedFiles) {
-        if (files.length >= 10) continue;
-        files.push(file);
-      }
-      renderPreviews();
-    }
-
-    function renderPreviews() {
-      preview.innerHTML = '';
-      imagemPrincipalSelect.innerHTML = '';
-
-      files.forEach((file, index) => {
         const reader = new FileReader();
-        reader.onload = e => {
-          const div = document.createElement('div');
-          div.className = 'preview';
-          div.innerHTML = `
-            <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
-            <img src="${e.target.result}" alt="preview">
-            <span>${file.name}<br>${(file.size / 1024).toFixed(1)} KB</span>
+        reader.onload = () => {
+          const box = document.createElement("div");
+          box.className = "image-box";
+          box.dataset.id = id;
+
+          box.innerHTML = `
+            <input type="radio" name="principal" value="${id}" ${selectedImages.length === 1 ? "checked" : ""}>
+            <button class="remove-btn" onclick="removeImage('${id}')" type="button">×</button>
+            <img src="${reader.result}" alt="preview">
           `;
-          preview.appendChild(div);
+
+          previewArea.appendChild(box);
         };
         reader.readAsDataURL(file);
-
-        const option = document.createElement('option');
-        option.value = index;
-        option.textContent = `Imagem ${index + 1} - ${file.name}`;
-        imagemPrincipalSelect.appendChild(option);
       });
     }
 
-    function removeImage(index) {
-      files.splice(index, 1);
-      renderPreviews();
+    window.removeImage = function(id) {
+      selectedImages = selectedImages.filter(img => img.id !== id);
+      const box = document.querySelector(`.image-box[data-id="${id}"]`);
+      if (box) previewArea.removeChild(box);
     }
 
-    async function uploadImages() {
-      errorMsg.textContent = '';
-      const marca = document.getElementById('marca').value;
-      const descricao = document.getElementById('descricao').value;
-      const gtin = document.getElementById('gtin').value;
-      const sku = document.getElementById('sku').value;
-      const principalIndex = imagemPrincipalSelect.value;
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
 
-      if (!marca || !descricao || !gtin || !sku || files.length === 0) {
-        errorMsg.textContent = 'Preencha todos os campos e selecione ao menos uma imagem.';
-        return;
+      const principalId = uploadForm.querySelector('input[name="principal"]:checked')?.value;
+
+      selectedImages.forEach((img, index) => {
+        formData.append("imagens[]", img.file, img.file.name);
+        formData.append(`principal_img${index + 1}`, img.id === principalId ? "true" : "false");
+      });
+
+      const response = await fetch("https://SEU_WEBHOOK_N8N_AQUI", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Imagens enviadas com sucesso!");
+        uploadForm.reset();
+        previewArea.innerHTML = "";
+        selectedImages = [];
+      } else {
+        alert("Erro ao enviar imagens.");
       }
-
-      for (let i = 0; i < files.length; i++) {
-        const formData = new FormData();
-        formData.append('imagem', files[i]);
-        formData.append('marca', marca);
-        formData.append('descricao', descricao);
-        formData.append('gtin', gtin);
-        formData.append('sku', sku);
-        formData.append('principal', i == principalIndex ? '1' : '0');
-        formData.append('ordem', i + 1);
-
-        try {
-          const res = await fetch('https://n8n.rjduarte.com.br/webhook/upload-imagem', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!res.ok) throw new Error('Erro no envio');
-        } catch (err) {
-          errorMsg.textContent = 'Erro de conexão: ' + err.message;
-          return;
-        }
-      }
-      alert('Imagens enviadas com sucesso!');
-      files = [];
-      renderPreviews();
-    }
+    });
   </script>
 </body>
 </html>
