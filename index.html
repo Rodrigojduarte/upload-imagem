@@ -1,187 +1,153 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Upload de Imagens de Produtos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Envio de Imagens de Produtos</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      color: #333;
+      background: #f0f8ff;
       padding: 20px;
-    }
-    h1 {
-      color: #003366;
-    }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 700px;
-      margin: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     label {
       font-weight: bold;
-      display: block;
-      margin-top: 15px;
     }
-    input, textarea {
+    input, select, textarea, button {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
+      padding: 10px;
+      margin: 8px 0 16px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
     }
-    input[type="file"] {
-      padding: 6px;
-    }
-    .imagem-preview {
+    .preview-container {
       display: flex;
       flex-wrap: wrap;
-      margin-top: 10px;
+      gap: 10px;
     }
-    .imagem-preview img {
-      height: 100px;
-      margin: 10px;
+    .preview {
+      position: relative;
+      width: 100px;
+    }
+    .preview img {
+      width: 100%;
       border-radius: 4px;
-      border: 1px solid #ccc;
     }
-    .imagem-box {
-      text-align: center;
-      margin-right: 15px;
-    }
-    .imagem-box label {
-      display: block;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 20px;
-      background-color: #007BFF;
+    .remove-btn {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
       color: white;
-      padding: 12px 20px;
       border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 50%;
       cursor: pointer;
-    }
-    .resultado {
-      margin-top: 20px;
-      font-size: 14px;
-      background: #e3f9e5;
-      border: 1px solid #a6d8a8;
-      padding: 10px;
-      border-radius: 6px;
-      display: none;
+      width: 20px;
+      height: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Upload de Imagens de Produtos</h1>
-  <form id="formUpload">
-    <label for="marca">Marca:</label>
-    <input type="text" id="marca" name="marca" required>
+  <h2>Envio de Imagens de Produtos</h2>
 
-    <label for="descricao">Descrição do Produto:</label>
-    <input type="text" id="descricao" name="descricao" required>
-
-    <label for="gtin">GTIN (código de barras):</label>
-    <input type="text" id="gtin" name="gtin" required>
-
-    <label for="sku">SKU:</label>
+  <form id="uploadForm">
+    <label for="sku">SKU *</label>
     <input type="text" id="sku" name="sku" required>
 
-    <label for="imagens">Selecione até 10 imagens:</label>
-    <input type="file" id="imagens" name="imagens" accept="image/*" multiple required>
+    <label for="marca">Marca</label>
+    <input type="text" id="marca" name="marca">
 
-    <div id="preview" class="imagem-preview"></div>
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao" rows="2"></textarea>
+
+    <label>Upload de Imagens (até 10)</label>
+    <input type="file" id="imagens" name="imagens" multiple accept="image/*" />
+
+    <div class="preview-container" id="previewContainer"></div>
+
+    <label for="imagemPrincipal">Selecionar Imagem Principal</label>
+    <select id="imagemPrincipal" name="imagemPrincipal"></select>
 
     <button type="submit">Enviar Imagens</button>
   </form>
 
-  <div id="resultado" class="resultado"></div>
-
   <script>
-    const form = document.getElementById("formUpload");
-    const preview = document.getElementById("preview");
-    const resultado = document.getElementById("resultado");
+    const form = document.getElementById('uploadForm');
+    const imagensInput = document.getElementById('imagens');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagemPrincipalSelect = document.getElementById('imagemPrincipal');
 
-    const showPreview = (files) => {
-      preview.innerHTML = "";
-      [...files].forEach((file, index) => {
+    let arquivos = [];
+
+    imagensInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files).slice(0, 10);
+      arquivos = files;
+
+      previewContainer.innerHTML = '';
+      imagemPrincipalSelect.innerHTML = '';
+
+      arquivos.forEach((file, index) => {
         const reader = new FileReader();
-        reader.onload = e => {
-          const box = document.createElement("div");
-          box.classList.add("imagem-box");
-          box.innerHTML = `
-            <img src="${e.target.result}" alt="Preview ${index}">
-            <label><input type="radio" name="principal" value="${index}" ${index === 0 ? 'checked' : ''}> Principal</label>
-          `;
-          preview.appendChild(box);
+        reader.onload = function (event) {
+          const div = document.createElement('div');
+          div.className = 'preview';
+
+          const img = document.createElement('img');
+          img.src = event.target.result;
+
+          const btn = document.createElement('button');
+          btn.innerText = 'X';
+          btn.className = 'remove-btn';
+          btn.onclick = () => {
+            arquivos.splice(index, 1);
+            imagensInput.value = ''; // reset input
+            imagensInput.dispatchEvent(new Event('change'));
+          };
+
+          div.appendChild(img);
+          div.appendChild(btn);
+          previewContainer.appendChild(div);
         };
         reader.readAsDataURL(file);
-      });
-    };
 
-    document.getElementById("imagens").addEventListener("change", function () {
-      if (this.files.length > 10) {
-        alert("Selecione no máximo 10 imagens.");
-        this.value = "";
-        preview.innerHTML = "";
-      } else {
-        showPreview(this.files);
-      }
+        const opt = document.createElement('option');
+        opt.value = index;
+        opt.textContent = `Imagem ${index + 1} - ${file.name}`;
+        imagemPrincipalSelect.appendChild(opt);
+      });
     });
 
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const formData = new FormData();
-      const marca = form.marca.value;
-      const descricao = form.descricao.value;
-      const gtin = form.gtin.value;
-      const sku = form.sku.value;
-      const imagens = form.imagens.files;
-      const principal = form.querySelector('input[name="principal"]:checked')?.value || 0;
+      formData.append('sku', document.getElementById('sku').value);
+      formData.append('marca', document.getElementById('marca').value);
+      formData.append('descricao', document.getElementById('descricao').value);
+      formData.append('imagem_principal', imagemPrincipalSelect.value);
 
-      if (!marca || !descricao || !gtin || !sku || imagens.length === 0) {
-        alert("Preencha todos os campos e selecione imagens.");
-        return;
-      }
+      arquivos.forEach((file, index) => {
+        formData.append(`imagens`, file);
+      });
 
-      for (let i = 0; i < imagens.length; i++) {
-        const metadata = {
-          marca,
-          descricao,
-          gtin,
-          sku,
-          principal: i == principal
-        };
+      try {
+        const response = await fetch('https://n8n.rjduarte.com.br/webhook/upload-imagem', {
+          method: 'POST',
+          body: formData,
+          mode: 'cors'
+        });
 
-        formData.append("binaryData", imagens[i]);
-        formData.append("json", JSON.stringify(metadata));
-
-        try {
-          const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
-            method: "POST",
-            body: formData
-          });
-
-          const data = await res.json();
-          resultado.style.display = "block";
-          resultado.innerHTML += `<p>✅ Imagem enviada com sucesso: <a href="${data.url_imagem}" target="_blank">${data.filename}</a></p>`;
-        } catch (err) {
-          resultado.style.display = "block";
-          resultado.innerHTML += `<p>❌ Erro ao enviar imagem: ${imagens[i].name}</p>`;
+        if (response.ok) {
+          alert('Imagens enviadas com sucesso!');
+          form.reset();
+          previewContainer.innerHTML = '';
+          imagemPrincipalSelect.innerHTML = '';
+        } else {
+          alert('Erro ao enviar imagens: ' + response.status);
         }
-
-        formData.delete("binaryData");
-        formData.delete("json");
+      } catch (error) {
+        alert('Erro: ' + error.message);
       }
-
-      form.reset();
-      preview.innerHTML = "";
     });
   </script>
 </body>
