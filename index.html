@@ -1,272 +1,219 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload de Imagens - Equipe AtacadoOnline</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envio de Imagens de Produtos</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(to right, #f1f4f9, #dff1ff);
+      background: linear-gradient(to right, #e9f2fb, #f8fcff);
       margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
       padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
     }
 
     h1 {
       text-align: center;
       color: #003366;
-    }
-
-    form {
-      background-color: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 700px;
-      margin: 2rem auto;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
     }
 
     label {
+      font-weight: bold;
       display: block;
       margin-top: 1rem;
-      font-weight: bold;
-      color: #003366;
     }
 
-    input[type="text"],
-    select {
+    input[type="text"], select {
       width: 100%;
       padding: 0.6rem;
-      font-size: 1rem;
+      margin-top: 0.5rem;
       border: 1px solid #ccc;
       border-radius: 6px;
-      margin-top: 0.3rem;
     }
 
-    #dropZone {
+    #drop-area {
       border: 2px dashed #003366;
       border-radius: 8px;
-      padding: 1.5rem;
+      padding: 1rem;
       text-align: center;
-      background-color: #f9fcff;
-      color: #003366;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
       margin-top: 1rem;
+      background-color: #f4faff;
+      cursor: pointer;
     }
 
-    #dropZone.dragover {
-      background-color: #cce5ff;
-    }
-
-    #imagePreviews {
+    #image-preview {
+      margin-top: 1rem;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 1rem;
     }
 
-    .thumb {
+    .image-thumb {
       position: relative;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 5px;
-      background: #fafafa;
-      width: 120px;
-      text-align: center;
+      width: 100px;
     }
 
-    .thumb img {
-      max-width: 100px;
-      max-height: 100px;
+    .image-thumb img {
+      width: 100%;
+      height: auto;
       border-radius: 6px;
     }
 
-    .thumb small {
-      display: block;
+    .image-thumb span {
       font-size: 0.8rem;
-      color: #555;
-      margin-top: 0.3rem;
+      display: block;
+      margin-top: 5px;
+      text-align: center;
     }
 
     .remove-btn {
       position: absolute;
-      top: -6px;
-      right: -6px;
-      background: #ff4d4d;
+      top: -8px;
+      right: -8px;
+      background: red;
       color: white;
       border: none;
       border-radius: 50%;
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       cursor: pointer;
-      font-size: 14px;
-      line-height: 0;
     }
 
     button[type="submit"] {
-      margin-top: 1.5rem;
+      margin-top: 2rem;
       width: 100%;
       padding: 0.8rem;
       background-color: #003366;
       color: white;
-      font-size: 1.1rem;
+      font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button[type="submit"]:hover {
-      background-color: #00509e;
-    }
-
-    .info {
-      text-align: center;
-      color: #0077b6;
-      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Upload de Imagens de Produtos</h1>
+  <div class="container">
+    <h1>Envio de Imagens de Produtos</h1>
+    <form id="uploadForm">
+      <label for="sku">SKU *</label>
+      <input type="text" id="sku" name="sku" required>
 
-  <form id="uploadForm" enctype="multipart/form-data">
-    <label for="sku">SKU</label>
-    <input type="text" id="sku" name="sku" required />
+      <label for="marca">Marca</label>
+      <input type="text" id="marca" name="marca">
 
-    <label for="gtin">GTIN</label>
-    <input type="text" id="gtin" name="gtin" required />
+      <label for="descricao">Descrição</label>
+      <input type="text" id="descricao" name="descricao">
 
-    <label for="marca">Marca</label>
-    <input type="text" id="marca" name="marca" required />
+      <label>Upload de Imagens (até 10)</label>
+      <div id="drop-area">Clique ou arraste imagens aqui</div>
+      <input type="file" id="images" name="images" accept="image/*" multiple style="display: none;">
 
-    <label for="descricao">Descrição</label>
-    <input type="text" id="descricao" name="descricao" required />
+      <div id="image-preview"></div>
 
-    <label>Upload de Imagens (até 10)</label>
-    <div id="dropZone">
-      Arraste e solte as imagens aqui ou clique para selecionar
-      <input type="file" id="images" name="images" accept=".jpg,.jpeg,.png,.webp" multiple hidden />
-    </div>
+      <label for="imagemPrincipal">Selecionar Imagem Principal</label>
+      <select id="imagemPrincipal" name="imagemPrincipal">
+        <option value="">Escolha a imagem principal</option>
+      </select>
 
-    <div id="imagePreviews"></div>
-
-    <label for="mainImage">Selecionar Imagem Principal</label>
-    <select id="mainImage" name="mainImage" required>
-      <option value="">Escolha a imagem principal</option>
-    </select>
-
-    <button type="submit">Enviar Imagens</button>
-
-    <div class="info" id="statusMsg"></div>
-  </form>
+      <button type="submit">Enviar Imagens</button>
+    </form>
+  </div>
 
   <script>
-    let allFiles = [];
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('images');
+    const preview = document.getElementById('image-preview');
+    const principalSelect = document.getElementById('imagemPrincipal');
 
-    const dropZone = document.getElementById("dropZone");
-    const fileInput = document.getElementById("images");
-    const previews = document.getElementById("imagePreviews");
-    const mainImageSelect = document.getElementById("mainImage");
-    const statusMsg = document.getElementById("statusMsg");
+    let fileList = [];
 
-    // Clique na área para abrir seletor
-    dropZone.addEventListener("click", () => fileInput.click());
+    dropArea.addEventListener('click', () => fileInput.click());
 
-    // Drag & Drop
-    dropZone.addEventListener("dragover", (e) => {
+    fileInput.addEventListener('change', handleFiles);
+
+    dropArea.addEventListener('dragover', e => {
       e.preventDefault();
-      dropZone.classList.add("dragover");
-    });
-    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-    dropZone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("dragover");
-      handleFiles(e.dataTransfer.files);
+      dropArea.style.background = '#cceeff';
     });
 
-    // Ao selecionar via botão
-    fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.background = '#f4faff';
+    });
 
-    // Função principal
-    function handleFiles(files) {
-      const newFiles = Array.from(files);
-      allFiles = [...allFiles, ...newFiles].slice(0, 10);
-      renderPreviews();
+    dropArea.addEventListener('drop', e => {
+      e.preventDefault();
+      dropArea.style.background = '#f4faff';
+      handleFiles({ target: { files: e.dataTransfer.files } });
+    });
+
+    function handleFiles(e) {
+      const files = Array.from(e.target.files);
+      for (let file of files) {
+        if (fileList.length >= 10) continue;
+        if (!fileList.includes(file)) {
+          fileList.push(file);
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const div = document.createElement('div');
+            div.classList.add('image-thumb');
+            div.innerHTML = `
+              <button class="remove-btn" onclick="removeImage(${fileList.length - 1})">&times;</button>
+              <img src="${event.target.result}" alt="Imagem">
+              <span>${file.name} (${Math.round(file.size / 1024)} KB)</span>
+            `;
+            preview.appendChild(div);
+            const option = document.createElement('option');
+            option.value = file.name;
+            option.textContent = `Imagem ${fileList.length} - ${file.name}`;
+            principalSelect.appendChild(option);
+          }
+          reader.readAsDataURL(file);
+        }
+      }
     }
 
-    // Renderizar miniaturas
-    function renderPreviews() {
-      previews.innerHTML = "";
-      mainImageSelect.innerHTML = '<option value="">Escolha a imagem principal</option>';
-
-      allFiles.forEach((file, index) => {
+    function removeImage(index) {
+      fileList.splice(index, 1);
+      preview.innerHTML = '';
+      principalSelect.innerHTML = '<option value="">Escolha a imagem principal</option>';
+      fileList.forEach((file, idx) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          const thumb = document.createElement("div");
-          thumb.classList.add("thumb");
-
-          thumb.innerHTML = `
-            <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
-            <img src="${e.target.result}" alt="${file.name}" title="${file.name}" />
-            <small>${file.name}</small>
-            <small>${(file.size / 1024).toFixed(1)} KB</small>
+        reader.onload = function (event) {
+          const div = document.createElement('div');
+          div.classList.add('image-thumb');
+          div.innerHTML = `
+            <button class="remove-btn" onclick="removeImage(${idx})">&times;</button>
+            <img src="${event.target.result}" alt="Imagem">
+            <span>${file.name} (${Math.round(file.size / 1024)} KB)</span>
           `;
-
-          previews.appendChild(thumb);
-
-          const option = document.createElement("option");
+          preview.appendChild(div);
+          const option = document.createElement('option');
           option.value = file.name;
-          option.text = `Imagem ${index + 1} - ${file.name}`;
-          mainImageSelect.appendChild(option);
-        };
+          option.textContent = `Imagem ${idx + 1} - ${file.name}`;
+          principalSelect.appendChild(option);
+        }
         reader.readAsDataURL(file);
       });
     }
 
-    // Remover imagem
-    function removeImage(index) {
-      allFiles.splice(index, 1);
-      renderPreviews();
-    }
-
-    // Envio
-    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
       e.preventDefault();
-
-      if (allFiles.length === 0) {
-        alert("Selecione pelo menos uma imagem!");
-        return;
-      }
-
-      const formData = new FormData();
-      allFiles.forEach((file) => formData.append("images", file));
-
-      formData.append("sku", document.getElementById("sku").value);
-      formData.append("gtin", document.getElementById("gtin").value);
-      formData.append("marca", document.getElementById("marca").value);
-      formData.append("descricao", document.getElementById("descricao").value);
-      formData.append("mainImage", document.getElementById("mainImage").value);
-
-      statusMsg.textContent = "⏳ Enviando imagens... aguarde.";
-
-      try {
-        const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (res.ok) {
-          statusMsg.textContent = "✅ Upload realizado com sucesso!";
-          allFiles = [];
-          renderPreviews();
-        } else {
-          statusMsg.textContent = "❌ Erro no upload. Verifique o servidor.";
-        }
-      } catch (err) {
-        statusMsg.textContent = "❌ Erro de conexão: " + err.message;
-      }
+      alert('Envio simulado com sucesso!');
     });
   </script>
 </body>
