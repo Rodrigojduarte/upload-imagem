@@ -1,187 +1,157 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload de Imagens - Equipe</title>
+  <title>Upload de Imagens - AtacadoOnline</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      padding: 2rem;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: linear-gradient(to right, #f5f8fa, #e0f0ff);
+      color: #333;
     }
 
-    h2 {
-      color: #003366;
+    h1 {
       text-align: center;
+      color: #003366;
     }
 
     form {
+      max-width: 600px;
+      margin: auto;
       background-color: white;
       padding: 2rem;
-      border-radius: 10px;
-      max-width: 700px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
 
     label {
-      font-weight: bold;
       display: block;
+      font-weight: bold;
       margin-top: 1rem;
     }
 
-    input, select, button {
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 0.25rem;
+    }
+
+    input[type="file"] {
+      margin-top: 0.5rem;
+    }
+
+    button {
+      margin-top: 2rem;
       width: 100%;
       padding: 0.75rem;
-      margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    #imagePreviewContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 1rem;
-    }
-
-    .preview-img {
-      max-width: 120px;
-      border-radius: 6px;
-      border: 2px solid transparent;
+      font-size: 1.1rem;
+      background-color: #003366;
+      color: white;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
     }
 
-    .preview-img.selected {
-      border-color: #007bff;
-      box-shadow: 0 0 8px rgba(0,123,255,0.5);
+    button:hover {
+      background-color: #00509e;
     }
 
-    .success, .error {
-      text-align: center;
+    #imagePreviews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-top: 1rem;
-      font-weight: bold;
     }
 
-    .success { color: green; }
-    .error { color: red; }
+    #imagePreviews img {
+      max-width: 100px;
+      max-height: 100px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    small {
+      display: block;
+      text-align: center;
+      margin-top: 0.25rem;
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
-  <h2>Upload de Imagens do Produto</h2>
 
-  <form id="uploadForm" enctype="multipart/form-data">
-    <label for="sku">SKU</label>
-    <input type="text" id="sku" name="sku" required>
+  <h1>Envio de Imagens de Produtos</h1>
 
-    <label for="gtin">GTIN</label>
-    <input type="text" id="gtin" name="gtin">
-
+  <form action="https://seu-webhook-n8n.aqui" method="POST" enctype="multipart/form-data">
     <label for="marca">Marca</label>
-    <input type="text" id="marca" name="marca">
+    <input type="text" id="marca" name="marca" required />
 
     <label for="descricao">Descrição</label>
-    <input type="text" id="descricao" name="descricao">
+    <input type="text" id="descricao" name="descricao" required />
 
     <label for="images">Selecionar Imagens (até 10)</label>
-    <input type="file" id="images" name="images" accept=".jpg,.jpeg,.webp,.png" multiple required>
+    <input
+      type="file"
+      id="images"
+      name="images"
+      accept=".jpg, .jpeg, .png, .webp"
+      multiple
+      onchange="handleFiles(this.files)"
+      required
+    />
+
+    <div id="imagePreviews"></div>
 
     <label for="mainImage">Selecionar Imagem Principal</label>
     <select id="mainImage" name="mainImage" required>
-      <option disabled selected>Escolha a imagem principal</option>
+      <option value="">Escolha a imagem principal</option>
     </select>
-
-    <div id="imagePreviewContainer"></div>
 
     <button type="submit">Enviar Imagens</button>
   </form>
 
-  <div id="mensagem"></div>
-
   <script>
-    const form = document.getElementById("uploadForm");
-    const input = document.getElementById("images");
-    const previewContainer = document.getElementById("imagePreviewContainer");
-    const principalSelect = document.getElementById("mainImage");
-    const mensagem = document.getElementById("mensagem");
+    function handleFiles(files) {
+      const previewContainer = document.getElementById('imagePreviews');
+      const mainImageSelect = document.getElementById('mainImage');
 
-    input.addEventListener("change", () => {
-      previewContainer.innerHTML = "";
-      principalSelect.innerHTML = '<option disabled selected>Escolha a imagem principal</option>';
+      previewContainer.innerHTML = '';
+      mainImageSelect.innerHTML = '<option value="">Escolha a imagem principal</option>';
 
-      Array.from(input.files).forEach((file, index) => {
+      const fileArray = Array.from(files);
+
+      fileArray.forEach((file, index) => {
         const reader = new FileReader();
+
         reader.onload = function (e) {
-          const img = document.createElement("img");
+          const img = document.createElement('img');
           img.src = e.target.result;
-          img.className = "preview-img";
+          img.alt = file.name;
           img.title = file.name;
 
-          img.addEventListener("click", () => {
-            document.querySelectorAll(".preview-img").forEach(el => el.classList.remove("selected"));
-            img.classList.add("selected");
-            principalSelect.value = file.name;
-          });
+          const container = document.createElement('div');
+          container.innerHTML = `<small>Imagem ${index + 1}</small>`;
+          container.appendChild(img);
 
-          previewContainer.appendChild(img);
+          previewContainer.appendChild(container);
 
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.value = file.name;
           option.text = `Imagem ${index + 1} - ${file.name}`;
-          principalSelect.appendChild(option);
+          mainImageSelect.appendChild(option);
         };
+
         reader.readAsDataURL(file);
       });
-    });
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData(form);
-      const files = input.files;
-
-      if (files.length === 0) {
-        mensagem.innerHTML = "<div class='error'>⚠️ Nenhuma imagem selecionada.</div>";
-        return;
-      }
-
-      if (!formData.get("mainImage")) {
-        mensagem.innerHTML = "<div class='error'>⚠️ Selecione a imagem principal.</div>";
-        return;
-      }
-
-      mensagem.innerHTML = "⏳ Enviando imagens... Aguarde.";
-
-      const otherFields = Object.fromEntries([...formData.entries()].filter(([k]) => k !== 'images' && k !== 'mainImage'));
-      const mainImage = formData.get("mainImage");
-
-      const results = await Promise.all(Array.from(files).map(async (file) => {
-        const body = new FormData();
-        body.append("imagem", file);
-        body.append("principal", file.name === mainImage ? "1" : "0");
-
-        for (const key in otherFields) {
-          body.append(key, otherFields[key]);
-        }
-
-        try {
-          const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
-            method: "POST",
-            body: body,
-          });
-          if (!res.ok) throw new Error("Erro no envio");
-          return `✅ ${file.name} enviada com sucesso!`;
-        } catch (err) {
-          return `❌ Erro ao enviar ${file.name}: ${err.message}`;
-        }
-      }));
-
-      mensagem.innerHTML = results.map(r => `<div>${r}</div>`).join("");
-    });
+    }
   </script>
+
 </body>
 </html>
