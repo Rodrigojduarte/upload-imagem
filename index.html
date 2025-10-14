@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload de Imagem - Equipe</title>
+  <title>Upload de Imagens – Equipe</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,10 +18,10 @@
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
     }
-    input, button {
+    input, button, label, select {
       display: block;
       width: 100%;
       margin-bottom: 1rem;
@@ -30,8 +30,13 @@
     }
     label {
       font-weight: bold;
-      margin-bottom: 0.5rem;
-      display: block;
+      margin-bottom: 0.25rem;
+    }
+    input[type="file"] {
+      padding: 0.25rem;
+    }
+    .checkbox-container {
+      margin: 1rem 0;
     }
     .success {
       color: green;
@@ -46,52 +51,83 @@
   </style>
 </head>
 <body>
-  <h2>Formulário de Upload de Imagem</h2>
+  <h2>Upload de Imagens do Produto</h2>
   <form id="uploadForm" enctype="multipart/form-data">
-    <label for="sku">SKU</label>
-    <input type="text" id="sku" name="sku" required>
-
     <label for="gtin">GTIN</label>
-    <input type="text" id="gtin" name="gtin">
+    <input type="text" id="gtin" name="gtin" required>
 
     <label for="marca">Marca</label>
-    <input type="text" id="marca" name="marca">
+    <input type="text" id="marca" name="marca" required>
 
     <label for="descricao">Descrição</label>
-    <input type="text" id="descricao" name="descricao">
+    <input type="text" id="descricao" name="descricao" required>
 
-    <label for="imagem">Imagem (.jpg, .webp ou .png)</label>
-    <input type="file" id="imagem" name="imagem" accept="image/jpeg,image/png,image/webp" required multiple>
+    <label for="imagem">Selecionar até 10 Imagens (.jpg, .webp, .png)</label>
+    <input type="file" id="imagem" name="imagem" accept="image/jpeg,image/png,image/webp" multiple required>
 
-    <button type="submit">Enviar Imagem</button>
+    <label for="imagemPrincipal">Nome da Imagem Principal</label>
+    <select id="imagemPrincipal" name="imagemPrincipal" required>
+      <option value="">Selecione a imagem principal</option>
+    </select>
+
+    <button type="submit">Enviar Imagens</button>
   </form>
 
   <div id="mensagem"></div>
 
   <script>
     const form = document.getElementById('uploadForm');
+    const imagemInput = document.getElementById('imagem');
+    const imagemPrincipalSelect = document.getElementById('imagemPrincipal');
     const mensagem = document.getElementById('mensagem');
+
+    imagemInput.addEventListener('change', () => {
+      imagemPrincipalSelect.innerHTML = '<option value="">Selecione a imagem principal</option>';
+      const files = imagemInput.files;
+      [...files].forEach((file, index) => {
+        const option = document.createElement('option');
+        option.value = file.name;
+        option.textContent = file.name;
+        imagemPrincipalSelect.appendChild(option);
+      });
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      mensagem.innerHTML = '⏳ Enviando imagens...';
 
-      const formData = new FormData(form);
-      const files = formData.getAll('imagem');
-      const otherFields = Object.fromEntries([...formData.entries()].filter(([k]) => k !== 'imagem'));
+      const files = imagemInput.files;
+      if (files.length === 0) {
+        mensagem.innerHTML = '<div class="error">Por favor, selecione ao menos uma imagem.</div>';
+        return;
+      }
 
-      mensagem.innerHTML = 'Enviando imagens... Aguarde.';
+      if (files.length > 10) {
+        mensagem.innerHTML = '<div class="error">Você só pode enviar no máximo 10 imagens.</div>';
+        return;
+      }
 
-      const results = await Promise.all(files.map(async (file) => {
+      const principal = imagemPrincipalSelect.value;
+      if (!principal) {
+        mensagem.innerHTML = '<div class="error">Selecione a imagem principal.</div>';
+        return;
+      }
+
+      const formDataRaw = new FormData(form);
+      const otherFields = Object.fromEntries([...formDataRaw.entries()].filter(([k]) => k !== 'imagem'));
+
+      const results = await Promise.all([...files].map(async (file) => {
         const body = new FormData();
         body.append('imagem', file);
         for (const key in otherFields) {
           body.append(key, otherFields[key]);
         }
+        body.append('isPrincipal', (file.name === principal).toString());
 
         try {
           const res = await fetch('https://n8n.rjduarte.com.br/webhook/upload-imagem', {
             method: 'POST',
-            body: body
+            body
           });
           if (!res.ok) throw new Error('Erro no envio');
           return `✅ ${file.name} enviada com sucesso!`;
@@ -105,4 +141,3 @@
   </script>
 </body>
 </html>
-
