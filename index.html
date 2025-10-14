@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload de Imagens - AtacadoOnline</title>
+  <title>Upload de Imagens - Equipe AtacadoOnline</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(to right, #f1f4f9, #dff1ff);
       margin: 0;
-      padding: 1rem;
-      background: linear-gradient(to right, #f5f8fa, #e0f0ff);
-      color: #333;
+      padding: 2rem;
     }
 
     h1 {
@@ -19,48 +18,45 @@
     }
 
     form {
-      max-width: 600px;
-      margin: auto;
-      background-color: white;
+      background-color: #fff;
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 2rem auto;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     }
 
     label {
       display: block;
-      font-weight: bold;
       margin-top: 1rem;
+      font-weight: bold;
+      color: #003366;
     }
 
     input[type="text"],
     select {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.6rem;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 6px;
-      margin-top: 0.25rem;
+      margin-top: 0.3rem;
     }
 
-    input[type="file"] {
-      margin-top: 0.5rem;
-    }
-
-    button {
-      margin-top: 2rem;
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1.1rem;
-      background-color: #003366;
-      color: white;
-      border: none;
+    #dropZone {
+      border: 2px dashed #003366;
       border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      background-color: #f9fcff;
+      color: #003366;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 1rem;
     }
 
-    button:hover {
-      background-color: #00509e;
+    #dropZone.dragover {
+      background-color: #cce5ff;
     }
 
     #imagePreviews {
@@ -70,42 +66,89 @@
       margin-top: 1rem;
     }
 
-    #imagePreviews img {
-      max-width: 100px;
-      max-height: 100px;
-      border-radius: 4px;
+    .thumb {
+      position: relative;
       border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 5px;
+      background: #fafafa;
+      width: 120px;
+      text-align: center;
     }
 
-    small {
+    .thumb img {
+      max-width: 100px;
+      max-height: 100px;
+      border-radius: 6px;
+    }
+
+    .thumb small {
       display: block;
-      text-align: center;
-      margin-top: 0.25rem;
       font-size: 0.8rem;
+      color: #555;
+      margin-top: 0.3rem;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 0;
+    }
+
+    button[type="submit"] {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      background-color: #003366;
+      color: white;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #00509e;
+    }
+
+    .info {
+      text-align: center;
+      color: #0077b6;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
+  <h1>Upload de Imagens de Produtos</h1>
 
-  <h1>Envio de Imagens de Produtos</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <label for="sku">SKU</label>
+    <input type="text" id="sku" name="sku" required />
 
-  <form action="https://seu-webhook-n8n.aqui" method="POST" enctype="multipart/form-data">
+    <label for="gtin">GTIN</label>
+    <input type="text" id="gtin" name="gtin" required />
+
     <label for="marca">Marca</label>
     <input type="text" id="marca" name="marca" required />
 
     <label for="descricao">Descrição</label>
     <input type="text" id="descricao" name="descricao" required />
 
-    <label for="images">Selecionar Imagens (até 10)</label>
-    <input
-      type="file"
-      id="images"
-      name="images"
-      accept=".jpg, .jpeg, .png, .webp"
-      multiple
-      onchange="handleFiles(this.files)"
-      required
-    />
+    <label>Upload de Imagens (até 10)</label>
+    <div id="dropZone">
+      Arraste e solte as imagens aqui ou clique para selecionar
+      <input type="file" id="images" name="images" accept=".jpg,.jpeg,.png,.webp" multiple hidden />
+    </div>
 
     <div id="imagePreviews"></div>
 
@@ -115,43 +158,116 @@
     </select>
 
     <button type="submit">Enviar Imagens</button>
+
+    <div class="info" id="statusMsg"></div>
   </form>
 
   <script>
-    function handleFiles(files) {
-      const previewContainer = document.getElementById('imagePreviews');
-      const mainImageSelect = document.getElementById('mainImage');
+    let allFiles = [];
 
-      previewContainer.innerHTML = '';
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("images");
+    const previews = document.getElementById("imagePreviews");
+    const mainImageSelect = document.getElementById("mainImage");
+    const statusMsg = document.getElementById("statusMsg");
+
+    // Clique na área para abrir seletor
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    // Drag & Drop
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFiles(e.dataTransfer.files);
+    });
+
+    // Ao selecionar via botão
+    fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+
+    // Função principal
+    function handleFiles(files) {
+      const newFiles = Array.from(files);
+      allFiles = [...allFiles, ...newFiles].slice(0, 10);
+      renderPreviews();
+    }
+
+    // Renderizar miniaturas
+    function renderPreviews() {
+      previews.innerHTML = "";
       mainImageSelect.innerHTML = '<option value="">Escolha a imagem principal</option>';
 
-      const fileArray = Array.from(files);
-
-      fileArray.forEach((file, index) => {
+      allFiles.forEach((file, index) => {
         const reader = new FileReader();
+        reader.onload = (e) => {
+          const thumb = document.createElement("div");
+          thumb.classList.add("thumb");
 
-        reader.onload = function (e) {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.alt = file.name;
-          img.title = file.name;
+          thumb.innerHTML = `
+            <button class="remove-btn" onclick="removeImage(${index})">&times;</button>
+            <img src="${e.target.result}" alt="${file.name}" title="${file.name}" />
+            <small>${file.name}</small>
+            <small>${(file.size / 1024).toFixed(1)} KB</small>
+          `;
 
-          const container = document.createElement('div');
-          container.innerHTML = `<small>Imagem ${index + 1}</small>`;
-          container.appendChild(img);
+          previews.appendChild(thumb);
 
-          previewContainer.appendChild(container);
-
-          const option = document.createElement('option');
+          const option = document.createElement("option");
           option.value = file.name;
           option.text = `Imagem ${index + 1} - ${file.name}`;
           mainImageSelect.appendChild(option);
         };
-
         reader.readAsDataURL(file);
       });
     }
-  </script>
 
+    // Remover imagem
+    function removeImage(index) {
+      allFiles.splice(index, 1);
+      renderPreviews();
+    }
+
+    // Envio
+    document.getElementById("uploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (allFiles.length === 0) {
+        alert("Selecione pelo menos uma imagem!");
+        return;
+      }
+
+      const formData = new FormData();
+      allFiles.forEach((file) => formData.append("images", file));
+
+      formData.append("sku", document.getElementById("sku").value);
+      formData.append("gtin", document.getElementById("gtin").value);
+      formData.append("marca", document.getElementById("marca").value);
+      formData.append("descricao", document.getElementById("descricao").value);
+      formData.append("mainImage", document.getElementById("mainImage").value);
+
+      statusMsg.textContent = "⏳ Enviando imagens... aguarde.";
+
+      try {
+        const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          statusMsg.textContent = "✅ Upload realizado com sucesso!";
+          allFiles = [];
+          renderPreviews();
+        } else {
+          statusMsg.textContent = "❌ Erro no upload. Verifique o servidor.";
+        }
+      } catch (err) {
+        statusMsg.textContent = "❌ Erro de conexão: " + err.message;
+      }
+    });
+  </script>
 </body>
 </html>
