@@ -21,7 +21,7 @@
     h1 {
       text-align: center;
       margin-bottom: 2rem;
-      color: #333;
+      color: #003366;
     }
     input[type="text"] {
       width: 100%;
@@ -43,6 +43,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
+      margin-bottom: 1rem;
     }
     .image-box {
       position: relative;
@@ -82,6 +83,30 @@
       font-size: 1rem;
       cursor: pointer;
     }
+    .status {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    .links {
+      margin-top: 1rem;
+      background: #eef7ee;
+      border: 1px solid #b6deb6;
+      padding: 1rem;
+      border-radius: 6px;
+    }
+    .links a {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #003366;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -102,6 +127,9 @@
 
       <button type="submit" class="upload-btn">Enviar Imagens</button>
     </form>
+
+    <div class="status" id="statusMsg"></div>
+    <div class="links" id="urlLinks"></div>
   </div>
 
   <script>
@@ -109,22 +137,15 @@
     const imageInput = document.getElementById('imageInput');
     const previewArea = document.getElementById('previewArea');
     const uploadForm = document.getElementById('uploadForm');
+    const statusMsg = document.getElementById('statusMsg');
+    const urlLinks = document.getElementById('urlLinks');
 
     let selectedImages = [];
 
     dropArea.addEventListener('click', () => imageInput.click());
-
     imageInput.addEventListener('change', handleFiles);
-
-    dropArea.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropArea.style.backgroundColor = "#e0f7fa";
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-      dropArea.style.backgroundColor = "";
-    });
-
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.backgroundColor = "#e0f7fa"; });
+    dropArea.addEventListener('dragleave', () => dropArea.style.backgroundColor = "");
     dropArea.addEventListener('drop', e => {
       e.preventDefault();
       dropArea.style.backgroundColor = "";
@@ -142,13 +163,11 @@
           const box = document.createElement("div");
           box.className = "image-box";
           box.dataset.id = id;
-
           box.innerHTML = `
             <input type="radio" name="principal" value="${id}" ${selectedImages.length === 1 ? "checked" : ""}>
             <button class="remove-btn" onclick="removeImage('${id}')" type="button">×</button>
             <img src="${reader.result}" alt="preview">
           `;
-
           previewArea.appendChild(box);
         };
         reader.readAsDataURL(file);
@@ -163,8 +182,10 @@
 
     uploadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(uploadForm);
+      statusMsg.textContent = "Enviando imagens...";
+      statusMsg.className = "status";
 
+      const formData = new FormData(uploadForm);
       const principalId = uploadForm.querySelector('input[name="principal"]:checked')?.value;
 
       selectedImages.forEach((img, index) => {
@@ -172,18 +193,31 @@
         formData.append(`principal_img${index + 1}`, img.id === principalId ? "true" : "false");
       });
 
-      const response = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
-        method: "POST",
-        body: formData,
-      });
+      try {
+        const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (response.ok) {
-        alert("Imagens enviadas com sucesso!");
+        if (!res.ok) throw new Error("Erro na resposta do servidor");
+
+        const data = await res.json();
+        statusMsg.textContent = "Imagens enviadas com sucesso!";
+        statusMsg.className = "status success";
+
+        urlLinks.innerHTML = "";
+        (data.urls || []).forEach((url, i) => {
+          urlLinks.innerHTML += `<a href="${url}" target="_blank">Imagem ${i + 1}</a>`;
+        });
+
         uploadForm.reset();
         previewArea.innerHTML = "";
         selectedImages = [];
-      } else {
-        alert("Erro ao enviar imagens.");
+
+      } catch (err) {
+        console.error(err);
+        statusMsg.textContent = "Erro ao enviar imagens.";
+        statusMsg.className = "status error";
       }
     });
   </script>
