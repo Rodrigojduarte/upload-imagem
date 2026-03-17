@@ -238,4 +238,140 @@ dropArea.onclick = () => fileInput.click();
 
 fileInput.onchange = (e) => handleFiles(e.target.files);
 
-dropArea.
+dropArea.ondrop = (e) => {
+  e.preventDefault();
+  handleFiles(e.dataTransfer.files);
+};
+
+dropArea.ondragover = (e) => e.preventDefault();
+
+function handleFiles(files) {
+  const list = [...files];
+
+  if (images.length + list.length > MAX_FILES) {
+    alert("Máximo de 10 imagens por envio.");
+    return;
+  }
+
+  list.forEach(file => {
+
+    if (!file.type.startsWith("image/")) {
+      alert(`Arquivo inválido: ${file.name}`);
+      return;
+    }
+
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`Arquivo muito grande: ${file.name}`);
+      return;
+    }
+
+    const id = crypto.randomUUID();
+    images.push({ id, file });
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const div = document.createElement("div");
+      div.className = "image-box";
+      div.dataset.id = id;
+
+      div.innerHTML = `
+        <input type="radio" name="principal" value="${id}" ${images.length === 1 ? "checked" : ""}>
+        <button class="remove-btn" onclick="removeImg('${id}')" type="button">×</button>
+        <img src="${reader.result}">
+      `;
+
+      preview.appendChild(div);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+window.removeImg = (id) => {
+  images = images.filter(i => i.id !== id);
+  document.querySelector(`[data-id="${id}"]`)?.remove();
+};
+
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+document.getElementById("form").onsubmit = async (e) => {
+  e.preventDefault();
+
+  const status = document.getElementById("status");
+  const links = document.getElementById("links");
+
+  status.textContent = "Processando...";
+  status.className = "status";
+  links.innerHTML = "";
+
+  const formData = new FormData(e.target);
+
+  if (mode === "upload") {
+    if (images.length === 0) {
+      alert("Envie ao menos uma imagem.");
+      return;
+    }
+
+    const principal = document.querySelector("input[name='principal']:checked")?.value;
+
+    images.forEach((img, i) => {
+      formData.append("imagens[]", img.file);
+      formData.append(`principal_${i}`, img.id === principal ? "true" : "false");
+    });
+  }
+
+  if (mode === "url") {
+    const raw = document.getElementById("urlInput").value.trim();
+
+    if (!raw) {
+      alert("Informe ao menos uma URL.");
+      return;
+    }
+
+    const urls = raw.split("\n").map(u => u.trim()).filter(u => u);
+
+    for (let u of urls) {
+      if (!isValidUrl(u)) {
+        alert(`URL inválida: ${u}`);
+        return;
+      }
+      formData.append("urls[]", u);
+    }
+  }
+
+  formData.append("mode", mode);
+
+  try {
+    const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.success) throw new Error(data.errors?.join(", ") || "Erro no envio");
+
+    status.textContent = "Imagens processadas com sucesso!";
+    status.className = "status success";
+
+    data.urls.forEach(u => {
+      links.innerHTML += `<a href="${u}" target="_blank">${u}</a>`;
+    });
+
+  } catch (err) {
+    status.textContent = err.message;
+    status.className = "status error";
+  }
+};
+
+</script>
+
+</body>
+</html>
