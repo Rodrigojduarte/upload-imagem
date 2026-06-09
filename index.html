@@ -7,152 +7,313 @@
   <title>Gestão de Imagens de Produtos</title>
 
   <style>
+    :root {
+      --azul: #003b70;
+      --azul-escuro: #003366;
+      --azul-hover: #002b52;
+      --azul-claro: #e9f5ff;
+      --verde: #087f23;
+      --vermelho: #d60000;
+      --cinza: #f4f6f8;
+      --borda: #d0d7de;
+      --texto: #222;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: "Segoe UI", Arial, sans-serif;
       margin: 0;
       background: linear-gradient(to right, #f1f4f9, #dff1ff);
-      color: #333;
+      color: var(--texto);
     }
 
     header {
-      background-color: #003366;
+      background-color: var(--azul-escuro);
       color: white;
-      padding: 1rem;
+      padding: 1.4rem 1rem;
       text-align: center;
     }
 
     h1 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 700;
     }
 
     .container {
-      max-width: 720px;
-      margin: 2rem auto;
+      max-width: 900px;
+      margin: 2.5rem auto;
       background: white;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     }
 
     label {
-      font-weight: 600;
+      font-weight: 700;
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
+      font-size: 1rem;
     }
 
-    input, select, textarea {
+    input,
+    select,
+    textarea {
       width: 100%;
-      padding: 0.7rem;
-      margin-bottom: 1rem;
+      padding: 0.8rem;
+      margin-bottom: 1.2rem;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 7px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .helper {
+      font-size: 0.88rem;
+      color: #666;
+      margin-top: -0.7rem;
+      margin-bottom: 1.1rem;
+      line-height: 1.35;
+    }
+
+    .notice {
+      padding: 0.9rem;
+      background: #fff8e1;
+      border: 1px solid #ffe08a;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
+      color: #5f4700;
+      font-size: 0.95rem;
+      line-height: 1.35;
     }
 
     .toggle-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 1.2rem;
     }
 
     .toggle-group button {
-      flex: 1;
-      padding: 0.7rem;
+      padding: 0.85rem;
       border: none;
       cursor: pointer;
-      border-radius: 6px;
+      border-radius: 7px;
       background: #ddd;
-      font-weight: bold;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: 0.2s;
     }
 
     .toggle-group button.active {
-      background: #003366;
+      background: var(--azul);
       color: white;
     }
 
     .drop-area {
       border: 2px dashed #2196f3;
-      padding: 1.5rem;
+      padding: 2rem 1.5rem;
       text-align: center;
       margin-bottom: 1rem;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       transition: 0.2s;
+      background: #fff;
+      font-size: 1.05rem;
     }
 
-    .drop-area:hover {
+    .drop-area:hover,
+    .drop-area.dragover {
       background: #f0faff;
+      border-color: var(--azul);
     }
 
     .image-preview {
       display: flex;
       flex-wrap: wrap;
       gap: 1rem;
-      margin-bottom: 1rem;
+      margin: 1rem 0 1.4rem;
     }
 
     .image-box {
       position: relative;
-      width: 100px;
+      width: 115px;
+      min-height: 145px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 6px;
+      background: #fafafa;
     }
 
     .image-box img {
       width: 100%;
-      border-radius: 6px;
+      height: 95px;
+      object-fit: contain;
+      border-radius: 7px;
+      background: white;
     }
 
     .image-box input[type="radio"] {
       position: absolute;
-      top: 4px;
-      left: 4px;
-      transform: scale(1.2);
+      top: 6px;
+      left: 6px;
+      width: auto;
+      margin: 0;
+      transform: scale(1.25);
+      cursor: pointer;
     }
 
     .remove-btn {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 5px;
+      right: 5px;
       background: red;
       color: white;
       border: none;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       cursor: pointer;
+      font-weight: bold;
+      line-height: 20px;
+    }
+
+    .image-info {
+      font-size: 0.74rem;
+      color: #555;
+      margin-top: 5px;
+      word-break: break-word;
+      text-align: center;
     }
 
     .upload-btn {
-      background-color: #003366;
+      background-color: var(--azul);
       color: white;
       border: none;
       padding: 1rem;
       width: 100%;
-      border-radius: 6px;
-      font-size: 1rem;
+      border-radius: 7px;
+      font-size: 1.1rem;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 800;
+      transition: 0.2s;
+    }
+
+    .upload-btn:hover {
+      background-color: var(--azul-hover);
+    }
+
+    .upload-btn:disabled {
+      background: #999;
+      cursor: not-allowed;
     }
 
     .status {
       text-align: center;
-      margin-top: 1rem;
-      font-weight: bold;
+      margin-top: 1.2rem;
+      font-weight: 800;
+      font-size: 1.05rem;
     }
 
-    .success { color: green; }
-    .error { color: red; }
+    .success {
+      color: var(--verde);
+    }
+
+    .error {
+      color: var(--vermelho);
+    }
 
     .links {
-      margin-top: 1rem;
+      margin-top: 1.2rem;
       padding: 1rem;
       background: #eef7ee;
-      border-radius: 6px;
+      border-radius: 8px;
+      word-break: break-all;
+      display: none;
+    }
+
+    .link-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+      background: white;
+      border: 1px solid #d7ead7;
+      padding: 10px;
+      border-radius: 7px;
+    }
+
+    .link-row a {
+      flex: 1;
+      color: #4b0082;
+      font-size: 0.95rem;
+    }
+
+    .copy-btn {
+      border: none;
+      background: var(--azul);
+      color: white;
+      padding: 0.45rem 0.7rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .url-list-preview {
+      margin: 1rem 0;
+      padding: 0.8rem;
+      background: #f8fafc;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      display: none;
+    }
+
+    .url-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.92rem;
       word-break: break-all;
     }
 
-    .links a {
-      display: block;
-      margin-bottom: 5px;
+    .url-item input {
+      width: auto;
+      margin: 3px 0 0 0;
+    }
+
+    .empty-preview {
+      color: #666;
+      font-size: 0.92rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        margin: 1rem;
+        padding: 1.2rem;
+      }
+
+      h1 {
+        font-size: 1.35rem;
+      }
+
+      .toggle-group {
+        grid-template-columns: 1fr;
+      }
+
+      .link-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
   </style>
 
@@ -166,16 +327,25 @@
 
 <div class="container">
 
-<form id="form">
+  <div class="notice">
+    Envie imagens para criar URLs oficiais no bucket da empresa. Nesta etapa, o sistema apenas cria a URL e registra a imagem. A publicação automática na Bling ainda não será feita.
+  </div>
 
-<label>SKU (obrigatório)</label> <input type="text" name="sku" required>
+  <form id="form">
 
-<label>Tipo de operação</label> <select name="tipo_operacao">
+```
+<label for="sku">SKU (obrigatório)</label>
+<input type="text" name="sku" id="sku" required placeholder="Ex: 48247" autocomplete="off" />
 
-  <option value="nova_principal">Nova imagem principal</option>
-  <option value="nova_complementar">Nova imagem complementar</option>
-  <option value="substituir_principal">Substituir principal</option>
+<label for="tipo_operacao">Tipo de operação</label>
+<select name="tipo_operacao" id="tipo_operacao">
+  <option value="adicionar">Adicionar imagens ao produto</option>
+  <option value="substituir">Substituir imagens existentes do produto</option>
 </select>
+
+<div class="helper">
+  Use “Adicionar” para produto novo ou para incluir novas fotos. Use “Substituir” quando as imagens antigas do produto deverão ser trocadas futuramente.
+</div>
 
 <label>Origem da imagem</label>
 
@@ -186,191 +356,346 @@
 
 <div id="uploadArea">
   <div class="drop-area" id="dropArea">
-    Clique ou arraste imagens (máx 10)
+    Clique ou arraste até 10 imagens. Marque a imagem principal.
     <input type="file" id="fileInput" multiple hidden accept="image/*">
   </div>
 </div>
 
 <div id="urlArea" style="display:none;">
-  <textarea id="urlInput" placeholder="Cole as URLs (uma por linha)"></textarea>
+  <label for="urlInput">URLs das imagens</label>
+  <textarea id="urlInput" placeholder="Cole as URLs, uma por linha"></textarea>
+
+  <div class="helper">
+    Para URLs externas, o sistema irá importar as imagens para o nosso bucket.
+  </div>
+
+  <div class="url-list-preview" id="urlListPreview"></div>
 </div>
 
 <div class="image-preview" id="preview"></div>
 
-<button class="upload-btn">Enviar Imagens</button>
+<button class="upload-btn" id="submitBtn" type="submit">Enviar Imagens</button>
+```
 
-</form>
+  </form>
 
-<div class="status" id="status"></div>
-<div class="links" id="links"></div>
+  <div class="status" id="status"></div>
+  <div class="links" id="links"></div>
 
 </div>
 
 <script>
+  const WEBHOOK_URL = "https://n8n.rjduarte.com.br/webhook/upload-imagem";
 
-let mode = "upload";
-let images = [];
+  let mode = "upload";
+  let images = [];
 
-const MAX_FILES = 10;
-const MAX_SIZE_MB = 10;
+  const MAX_FILES = 10;
+  const MAX_SIZE_MB = 10;
 
-const btnUpload = document.getElementById("btnUpload");
-const btnUrl = document.getElementById("btnUrl");
+  const btnUpload = document.getElementById("btnUpload");
+  const btnUrl = document.getElementById("btnUrl");
+  const dropArea = document.getElementById("dropArea");
+  const fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("preview");
+  const statusBox = document.getElementById("status");
+  const linksBox = document.getElementById("links");
+  const submitBtn = document.getElementById("submitBtn");
+  const urlInput = document.getElementById("urlInput");
+  const urlListPreview = document.getElementById("urlListPreview");
 
-btnUpload.onclick = () => switchMode("upload");
-btnUrl.onclick = () => switchMode("url");
+  btnUpload.onclick = () => switchMode("upload");
+  btnUrl.onclick = () => switchMode("url");
 
-function switchMode(m) {
-  mode = m;
+  function switchMode(newMode) {
+    mode = newMode;
 
-  btnUpload.classList.toggle("active", m === "upload");
-  btnUrl.classList.toggle("active", m === "url");
+    btnUpload.classList.toggle("active", newMode === "upload");
+    btnUrl.classList.toggle("active", newMode === "url");
 
-  document.getElementById("uploadArea").style.display = m === "upload" ? "block" : "none";
-  document.getElementById("urlArea").style.display = m === "url" ? "block" : "none";
-}
+    document.getElementById("uploadArea").style.display = newMode === "upload" ? "block" : "none";
+    document.getElementById("urlArea").style.display = newMode === "url" ? "block" : "none";
 
-const dropArea = document.getElementById("dropArea");
-const fileInput = document.getElementById("fileInput");
-const preview = document.getElementById("preview");
-
-dropArea.onclick = () => fileInput.click();
-
-fileInput.onchange = (e) => handleFiles(e.target.files);
-
-dropArea.ondrop = (e) => {
-  e.preventDefault();
-  handleFiles(e.dataTransfer.files);
-};
-
-dropArea.ondragover = (e) => e.preventDefault();
-
-function handleFiles(files) {
-  const list = [...files];
-
-  if (images.length + list.length > MAX_FILES) {
-    alert("Máximo de 10 imagens por envio.");
-    return;
+    clearMessages();
   }
 
-  list.forEach(file => {
+  dropArea.onclick = () => fileInput.click();
 
-    if (!file.type.startsWith("image/")) {
-      alert(`Arquivo inválido: ${file.name}`);
+  fileInput.onchange = (event) => {
+    handleFiles(event.target.files);
+    fileInput.value = "";
+  };
+
+  dropArea.ondrop = (event) => {
+    event.preventDefault();
+    dropArea.classList.remove("dragover");
+    handleFiles(event.dataTransfer.files);
+  };
+
+  dropArea.ondragover = (event) => {
+    event.preventDefault();
+    dropArea.classList.add("dragover");
+  };
+
+  dropArea.ondragleave = () => {
+    dropArea.classList.remove("dragover");
+  };
+
+  urlInput.addEventListener("input", renderUrlPreview);
+
+  function handleFiles(files) {
+    clearMessages();
+
+    const list = [...files];
+
+    if (images.length + list.length > MAX_FILES) {
+      alert(`Máximo de ${MAX_FILES} imagens por envio.`);
       return;
     }
 
-    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      alert(`Arquivo muito grande: ${file.name}`);
-      return;
-    }
-
-    const id = crypto.randomUUID();
-    images.push({ id, file });
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const div = document.createElement("div");
-      div.className = "image-box";
-      div.dataset.id = id;
-
-      div.innerHTML = `
-        <input type="radio" name="principal" value="${id}" ${images.length === 1 ? "checked" : ""}>
-        <button class="remove-btn" onclick="removeImg('${id}')" type="button">×</button>
-        <img src="${reader.result}">
-      `;
-
-      preview.appendChild(div);
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-window.removeImg = (id) => {
-  images = images.filter(i => i.id !== id);
-  document.querySelector(`[data-id="${id}"]`)?.remove();
-};
-
-function isValidUrl(url) {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-document.getElementById("form").onsubmit = async (e) => {
-  e.preventDefault();
-
-  const status = document.getElementById("status");
-  const links = document.getElementById("links");
-
-  status.textContent = "Processando...";
-  status.className = "status";
-  links.innerHTML = "";
-
-  const formData = new FormData(e.target);
-
-  if (mode === "upload") {
-    if (images.length === 0) {
-      alert("Envie ao menos uma imagem.");
-      return;
-    }
-
-    const principal = document.querySelector("input[name='principal']:checked")?.value;
-
-    images.forEach((img, i) => {
-      formData.append("imagens[]", img.file);
-      formData.append(`principal_${i}`, img.id === principal ? "true" : "false");
-    });
-  }
-
-  if (mode === "url") {
-    const raw = document.getElementById("urlInput").value.trim();
-
-    if (!raw) {
-      alert("Informe ao menos uma URL.");
-      return;
-    }
-
-    const urls = raw.split("\n").map(u => u.trim()).filter(u => u);
-
-    for (let u of urls) {
-      if (!isValidUrl(u)) {
-        alert(`URL inválida: ${u}`);
+    list.forEach(file => {
+      if (!file.type.startsWith("image/")) {
+        alert(`Arquivo inválido: ${file.name}`);
         return;
       }
-      formData.append("urls[]", u);
+
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`Arquivo muito grande: ${file.name}. Limite: ${MAX_SIZE_MB} MB.`);
+        return;
+      }
+
+      const id = crypto.randomUUID();
+
+      images.push({
+        id,
+        file
+      });
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const div = document.createElement("div");
+        div.className = "image-box";
+        div.dataset.id = id;
+
+        const checked = images.length === 1 ? "checked" : "";
+
+        div.innerHTML = `
+          <input type="radio" name="principal" value="${id}" ${checked} title="Imagem principal">
+          <button class="remove-btn" onclick="removeImg('${id}')" type="button">×</button>
+          <img src="${reader.result}" alt="${escapeHtml(file.name)}">
+          <div class="image-info">${escapeHtml(file.name)}</div>
+        `;
+
+        preview.appendChild(div);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  window.removeImg = (id) => {
+    images = images.filter(img => img.id !== id);
+    document.querySelector(`[data-id="${id}"]`)?.remove();
+
+    const principalChecked = document.querySelector("input[name='principal']:checked");
+
+    if (!principalChecked) {
+      const firstRadio = document.querySelector("input[name='principal']");
+      if (firstRadio) firstRadio.checked = true;
+    }
+  };
+
+  function renderUrlPreview() {
+    const urls = getUrlsFromTextarea();
+
+    urlListPreview.innerHTML = "";
+
+    if (urls.length === 0) {
+      urlListPreview.style.display = "none";
+      return;
+    }
+
+    urlListPreview.style.display = "block";
+
+    urls.forEach((url, index) => {
+      const div = document.createElement("div");
+      div.className = "url-item";
+
+      div.innerHTML = `
+        <input type="radio" name="principal_url" value="${index}" ${index === 0 ? "checked" : ""}>
+        <span>${escapeHtml(url)}</span>
+      `;
+
+      urlListPreview.appendChild(div);
+    });
+  }
+
+  function getUrlsFromTextarea() {
+    return urlInput.value
+      .split("\n")
+      .map(url => url.trim())
+      .filter(url => url.length > 0);
+  }
+
+  function isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  formData.append("mode", mode);
+  document.getElementById("form").onsubmit = async (event) => {
+    event.preventDefault();
 
-  try {
-    const res = await fetch("https://n8n.rjduarte.com.br/webhook/upload-imagem", {
-      method: "POST",
-      body: formData
-    });
+    clearMessages();
 
-    const data = await res.json();
+    const sku = document.getElementById("sku").value.trim();
 
-    if (!data.success) throw new Error(data.errors?.join(", ") || "Erro no envio");
+    if (!sku) {
+      alert("Informe o SKU.");
+      return;
+    }
 
-    status.textContent = "Imagens processadas com sucesso!";
-    status.className = "status success";
+    const formData = new FormData(event.target);
+    formData.append("mode", mode);
 
-    data.urls.forEach(u => {
-      links.innerHTML += `<a href="${u}" target="_blank">${u}</a>`;
-    });
+    if (mode === "upload") {
+      if (images.length === 0) {
+        alert("Envie ao menos uma imagem.");
+        return;
+      }
 
-  } catch (err) {
-    status.textContent = err.message;
-    status.className = "status error";
+      const principal = document.querySelector("input[name='principal']:checked")?.value;
+
+      images.forEach((img, index) => {
+        formData.append("imagens", img.file);
+        formData.append(`principal_${index}`, img.id === principal ? "true" : "false");
+      });
+    }
+
+    if (mode === "url") {
+      const urls = getUrlsFromTextarea();
+
+      if (urls.length === 0) {
+        alert("Informe ao menos uma URL.");
+        return;
+      }
+
+      if (urls.length > MAX_FILES) {
+        alert(`Máximo de ${MAX_FILES} URLs por envio.`);
+        return;
+      }
+
+      for (const url of urls) {
+        if (!isValidUrl(url)) {
+          alert(`URL inválida: ${url}`);
+          return;
+        }
+
+        formData.append("urls", url);
+      }
+
+      const principalUrlIndex = document.querySelector("input[name='principal_url']:checked")?.value || "0";
+      formData.append("principal_url_index", principalUrlIndex);
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        body: formData
+      });
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("O servidor respondeu, mas não retornou um JSON válido.");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erro no envio das imagens.");
+      }
+
+      if (!data.success) {
+        const errors = Array.isArray(data.errors) ? data.errors.join(", ") : "";
+        throw new Error(errors || data.message || "Erro no processamento das imagens.");
+      }
+
+      showSuccess(data);
+
+    } catch (error) {
+      statusBox.textContent = error.message || "Erro no envio.";
+      statusBox.className = "status error";
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  function showSuccess(data) {
+    statusBox.textContent = data.message || "Imagens processadas com sucesso!";
+    statusBox.className = "status success";
+
+    const urls = Array.isArray(data.urls) ? data.urls : [];
+
+    linksBox.innerHTML = "";
+
+    if (urls.length > 0) {
+      const aviso = document.createElement("div");
+      aviso.style.marginBottom = "12px";
+      aviso.style.fontWeight = "700";
+      aviso.textContent = "URLs criadas. Use manualmente na Bling apenas se for urgente. Status: aguardando tratamento.";
+      linksBox.appendChild(aviso);
+
+      urls.forEach(url => {
+        const row = document.createElement("div");
+        row.className = "link-row";
+
+        row.innerHTML = `
+          <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>
+          <button type="button" class="copy-btn">Copiar</button>
+        `;
+
+        row.querySelector(".copy-btn").onclick = async () => {
+          await navigator.clipboard.writeText(url);
+          row.querySelector(".copy-btn").textContent = "Copiado!";
+          setTimeout(() => {
+            row.querySelector(".copy-btn").textContent = "Copiar";
+          }, 1500);
+        };
+
+        linksBox.appendChild(row);
+      });
+
+      linksBox.style.display = "block";
+    }
   }
-};
 
+  function setLoading(isLoading) {
+    submitBtn.disabled = isLoading;
+    submitBtn.textContent = isLoading ? "Enviando..." : "Enviar Imagens";
+  }
+
+  function clearMessages() {
+    statusBox.textContent = "";
+    statusBox.className = "status";
+    linksBox.innerHTML = "";
+    linksBox.style.display = "none";
+  }
+
+  function escapeHtml(value) {
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 </script>
 
 </body>
